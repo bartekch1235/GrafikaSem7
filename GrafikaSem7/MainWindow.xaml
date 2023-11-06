@@ -22,6 +22,8 @@
         <Button x:Name="Divison" Content="Divison" HorizontalAlignment="Left" Margin="10,164,0,0" VerticalAlignment="Top" Click="Divison_Click"/>
         <Button x:Name="Brightness" Content="Brightness" HorizontalAlignment="Left" Margin="5,266,0,0" VerticalAlignment="Top" Click="Brightness_Click"/>
         <Button x:Name="Gray" Content="Convert to Gray Scale" HorizontalAlignment="Left" Margin="2,291,0,0" VerticalAlignment="Top" Click="Gray_Click"/>
+        <Button x:Name="Smoothing" Content="Smoothing" HorizontalAlignment="Left" Margin="703,33,0,0" VerticalAlignment="Top" Click="Smoothing_Click"/>
+        <Button x:Name="Median" Content="Median" HorizontalAlignment="Left" Margin="703,60,0,0" VerticalAlignment="Top" Click="Median_Click"/>
 
 
     </Grid>

@@ -22,7 +22,9 @@ namespace grafzad3
 {
     public enum TransformationType
     {
-        add, sub, mul, div , bri, gray
+        add, sub, mul, div, bri, gray,
+        smooth,
+        median
     }
     public partial class MainWindow : Window
     {
@@ -79,12 +81,18 @@ namespace grafzad3
                     break;
                 case TransformationType.mul:
                     pixels = MulRGB(pixels);
-                    break;                
+                    break;
                 case TransformationType.bri:
                     pixels = ChangeBrightness(pixels);
                     break;
                 case TransformationType.gray:
                     pixels = ChangeToGray(pixels);
+                    break;
+                case TransformationType.smooth:
+                    pixels = SmoothTransformation(pixels, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight);
+                    break;
+                case TransformationType.median:
+                    pixels = MedianTransformation(pixels, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight);
                     break;
 
             }
@@ -95,6 +103,189 @@ namespace grafzad3
             Image.Source = writeableBitmap;
 
         }
+
+        private byte[] SmoothTransformation(byte[] pixels, int width, int heigh)
+        {
+            byte[] newPixels = new byte[pixels.Length];
+            width *= 4;
+            for (int y = 0; y < heigh; y++)
+            {
+                for (int x = 0; x < width; x += 4)
+                {
+                    int avgR = 0;
+                    int avgG = 0;
+                    int avgB = 0;
+
+                    int pixelCount = 1;//Middle
+                    avgB = pixels[x + y * width];
+                    avgG = pixels[x + 1 + y * width];
+                    avgR = pixels[x + 2 + y * width];
+
+
+                    if (y > 0 && x > 0)//U-L
+                    {
+                        //MessageBox.Show("U-L", x.ToString() + " " + y.ToString());
+                        pixelCount += 1;
+                        avgB += pixels[(x - 4) + (y - 1) * width];
+                        avgG += pixels[(x - 4) + 1 + (y - 1) * width];
+                        avgR += pixels[(x - 4) + 2 + (y - 1) * width];
+                    }
+                    if (y > 0)//Up
+                    {
+                        //MessageBox.Show("U", x.ToString() + " " + y.ToString());
+                        pixelCount += 1;
+                        avgB += pixels[x + (y - 1) * width];
+                        avgG += pixels[x + 1 + (y - 1) * width];
+                        avgR += pixels[x + 2 + (y - 1) * width];
+                    }
+                    if (y > 0 && x < width)//U-R
+                    {
+                        // MessageBox.Show("U-R", x.ToString() + " " + y.ToString());
+                        pixelCount += 1;
+                        avgB += pixels[(x + 4) + (y - 1) * width];
+                        avgG += pixels[(x + 4) + 1 + (y - 1) * width];
+                        avgR += pixels[(x + 4) + 2 + (y - 1) * width];
+                    }
+                    if (x > 0)//L
+                    {
+                        //MessageBox.Show("L", x.ToString() + " " + y.ToString());
+                        pixelCount += 1;
+                        avgB += pixels[(x - 4) + (y) * width];
+                        avgG += pixels[(x - 4) + 1 + (y) * width];
+                        avgR += pixels[(x - 4) + 2 + (y) * width];
+                    }
+                    if (x < width - 4)//R
+                    {
+                        //MessageBox.Show("R", x.ToString() + " " + y.ToString());
+                        pixelCount += 1;
+                        avgB += pixels[(x + 4) + (y) * width];
+                        avgG += pixels[(x + 4) + 1 + (y) * width];
+                        avgR += pixels[(x + 4) + 2 + (y) * width];
+                    }
+                    if (y < heigh - 1 && x > 0)//D-L
+                    {
+                        // MessageBox.Show("D-L", x.ToString() + " " + y.ToString());
+                        pixelCount += 1;
+                        avgB += pixels[(x - 4) + (y + 1) * width];
+                        avgG += pixels[(x - 4) + 1 + (y + 1) * width];
+                        avgR += pixels[(x - 4) + 2 + (y + 1) * width];
+                    }
+                    if (y < heigh - 1)//Down
+                    {
+                        //MessageBox.Show("D", x.ToString() + " " + y.ToString());
+                        pixelCount += 1;
+                        avgB += pixels[x + (y + 1) * width];
+                        avgG += pixels[x + 1 + (y + 1) * width];
+                        avgR += pixels[x + 2 + (y + 1) * width];
+                    }
+                    if (y < heigh - 1 && x < width - 4)//D-R
+                    {
+                        //MessageBox.Show("D-R", x.ToString() + " " + y.ToString());
+                        pixelCount += 1;
+                        avgB += pixels[(x + 4) + (y + 1) * width];
+                        avgG += pixels[(x + 4) + 1 + (y + 1) * width];
+                        avgR += pixels[(x + 4) + 2 + (y + 1) * width];
+                    }
+
+
+                    // MessageBox.Show(avgB.ToString(),pixelCount.ToString());
+
+                    newPixels[x + y * width] = (byte)(avgB / pixelCount);
+                    newPixels[x + 1 + y * width] = (byte)(avgG / pixelCount);
+                    newPixels[x + 2 + y * width] = (byte)(avgR / pixelCount);
+                }
+            }
+
+            return newPixels;
+        }
+        private byte[] MedianTransformation(byte[] pixels, int width, int heigh)
+        {
+            byte[] newPixels = new byte[pixels.Length];
+            width *= 4;
+            for (int y = 0; y < heigh; y++)
+            {
+                for (int x = 0; x < width; x += 4)
+                {
+                    List<int> red = new List<int>();
+                    List<int> green = new List<int>();
+                    List<int> blue = new List<int>();
+
+                    int pixelCount = 1;//Middle
+                    blue.Add(pixels[x + y * width]);
+                    green.Add(pixels[x + 1 + y * width]);
+                    red.Add(pixels[x + 2 + y * width]);
+
+
+                    if (y > 0 && x > 0)//U-L
+                    {
+
+                        blue.Add(pixels[(x - 4) + (y - 1) * width]);
+                        green.Add(pixels[(x - 4) + 1 + (y - 1) * width]);
+                        red.Add(pixels[(x - 4) + 2 + (y - 1) * width]);
+                    }
+                    if (y > 0)//Up
+                    {
+
+                        blue.Add(pixels[x + (y - 1) * width]);
+                        green.Add(pixels[x + 1 + (y - 1) * width]);
+                        red.Add(pixels[x + 2 + (y - 1) * width]);
+                    }
+                    if (y > 0 && x < width)//U-R
+                    {
+
+                        blue.Add(pixels[(x + 4) + (y - 1) * width]);
+                        green.Add(pixels[(x + 4) + 1 + (y - 1) * width]);
+                        red.Add(pixels[(x + 4) + 2 + (y - 1) * width]);
+                    }
+                    if (x > 0)//L
+                    {
+
+                        blue.Add(pixels[(x - 4) + (y) * width]);
+                        green.Add(pixels[(x - 4) + 1 + (y) * width]);
+                        red.Add(pixels[(x - 4) + 2 + (y) * width]);
+                    }
+                    if (x < width - 4)//R
+                    {
+
+                        blue.Add(pixels[(x + 4) + (y) * width]);
+                        green.Add(pixels[(x + 4) + 1 + (y) * width]);
+                        red.Add(pixels[(x + 4) + 2 + (y) * width]);
+                    }
+                    if (y < heigh - 1 && x > 0)//D-L
+                    {
+
+                        blue.Add(pixels[(x - 4) + (y + 1) * width]);
+                        green.Add(pixels[(x - 4) + 1 + (y + 1) * width]);
+                        red.Add(pixels[(x - 4) + 2 + (y + 1) * width]);
+                    }
+                    if (y < heigh - 1)//Down
+                    {
+                        blue.Add(pixels[x + (y + 1) * width]);
+                        green.Add(pixels[x + 1 + (y + 1) * width]);
+                        red.Add(pixels[x + 2 + (y + 1) * width]);
+                    }
+                    if (y < heigh - 1 && x < width - 4)//D-R
+                    {
+
+                        blue.Add(pixels[(x + 4) + (y + 1) * width]);
+                        green.Add(pixels[(x + 4) + 1 + (y + 1) * width]);
+                        red.Add(pixels[(x + 4) + 2 + (y + 1) * width]);
+                    }
+
+
+                    blue.Sort();
+                    green.Sort();
+                    red.Sort();
+
+                    newPixels[x + y * width] = (byte)(blue[blue.Count/2]);
+                    newPixels[x + 1 + y * width] = (byte)(green[green.Count/2]);
+                    newPixels[x + 2 + y * width] = (byte)(red[red.Count/2]);
+                }
+            }
+
+            return newPixels;
+        }
+
         byte[] AddRGB(byte[] pixels)
         {
             for (int i = 0; i < pixels.Length; i += 4)
@@ -127,7 +318,7 @@ namespace grafzad3
         }
         byte[] DivRGB(byte[] pixels)
         {
-            if (redValue == 0|| blueValue == 0 || greenValue == 0 )
+            if (redValue == 0 || blueValue == 0 || greenValue == 0)
             {
                 MessageBox.Show("Divison by 0");
             }
@@ -146,9 +337,9 @@ namespace grafzad3
         {
             for (int i = 0; i < pixels.Length; i += 4)
             {
-                pixels[i] = (byte)Math.Clamp( pixels[i] + factorValue,0,255);
-                pixels[i + 1] = (byte)Math.Clamp(pixels[i+1] + factorValue, 0, 255);
-                pixels[i + 2] = (byte)Math.Clamp(pixels[i+2] + factorValue, 0, 255);
+                pixels[i] = (byte)Math.Clamp(pixels[i] + factorValue, 0, 255);
+                pixels[i + 1] = (byte)Math.Clamp(pixels[i + 1] + factorValue, 0, 255);
+                pixels[i + 2] = (byte)Math.Clamp(pixels[i + 2] + factorValue, 0, 255);
             }
             return pixels;
         }
@@ -157,7 +348,7 @@ namespace grafzad3
         {
             for (int i = 0; i < pixels.Length; i += 4)
             {
-                var avg= (pixels[i]+ pixels[i+1]+ pixels[i+2])/ 3;
+                var avg = (pixels[i] + pixels[i + 1] + pixels[i + 2]) / 3;
 
                 pixels[i] = (byte)avg;
                 pixels[i + 1] = (byte)avg;
@@ -214,6 +405,16 @@ namespace grafzad3
         private void Gray_Click(object sender, RoutedEventArgs e)
         {
             GenerateImage(TransformationType.gray);
+        }
+
+        private void Smoothing_Click(object sender, RoutedEventArgs e)
+        {
+            GenerateImage(TransformationType.smooth);
+        }
+
+        private void Median_Click(object sender, RoutedEventArgs e)
+        {
+            GenerateImage(TransformationType.median);
         }
     }
 }
