@@ -8,8 +8,21 @@
         Title="MainWindow" Height="450" Width="800">
     <Grid>
         <Image RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased" x:Name="Image"></Image>
-        <Button Content="save as p2" HorizontalAlignment="Left" Margin="31,75,0,0" VerticalAlignment="Top" Click="Button_Click"/>
-        <Button Content="save as p1" HorizontalAlignment="Left" Margin="31,128,0,0" VerticalAlignment="Top" Click="Button_Click_1"/>
+        <Button x:Name="Add_RGB" Content="Add RGB" HorizontalAlignment="Left" Margin="10,89,0,0" VerticalAlignment="Top" Click="Add_RGB_Click"/>
+        <TextBox x:Name="RedTextBox" HorizontalAlignment="Left" Margin="0,66,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="29" TextChanged="RedTextBox_TextChanged"/>
+        <TextBox x:Name="GreenTextBox" HorizontalAlignment="Left" Margin="37,66,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="28" TextChanged="GreenTextBox_TextChanged"/>
+        <TextBox x:Name="BlueTextBox" HorizontalAlignment="Left" Margin="74,66,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="29" TextChanged="BlueTextBox_TextChanged"/>
+        <Label Content="red" HorizontalAlignment="Left" Margin="-2,40,0,0" VerticalAlignment="Top"/>
+        <Label Content="green" HorizontalAlignment="Left" Margin="31,40,0,0" VerticalAlignment="Top"/>
+        <Label Content="blue" HorizontalAlignment="Left" Margin="70,40,0,0" VerticalAlignment="Top"/>
+        <Button x:Name="Sub_RGB" Content="Sub RGB" HorizontalAlignment="Left" Margin="10,114,0,0" VerticalAlignment="Top" Click="Sub_RGB_Click"/>
+        <Label Content="Factor" HorizontalAlignment="Left" Margin="2,217,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="FactorTextBox" HorizontalAlignment="Left" Margin="6,243,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="41" TextChanged="FactorTextBox_TextChanged"/>
+        <Button x:Name="Multiplication" Content="Multiplication" HorizontalAlignment="Left" Margin="6,139,0,0" VerticalAlignment="Top" Click="Multiplication_Click"/>
+        <Button x:Name="Divison" Content="Divison" HorizontalAlignment="Left" Margin="10,164,0,0" VerticalAlignment="Top" Click="Divison_Click"/>
+        <Button x:Name="Brightness" Content="Brightness" HorizontalAlignment="Left" Margin="5,266,0,0" VerticalAlignment="Top" Click="Brightness_Click"/>
+        <Button x:Name="Gray" Content="Convert to Gray Scale" HorizontalAlignment="Left" Margin="2,291,0,0" VerticalAlignment="Top" Click="Gray_Click"/>
+
 
     </Grid>
 </Window>
