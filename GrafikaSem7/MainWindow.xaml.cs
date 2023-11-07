@@ -15,6 +15,7 @@ using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Media.Media3D;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
@@ -24,7 +25,9 @@ namespace grafzad3
     {
         add, sub, mul, div, bri, gray,
         smooth,
-        median
+        median,
+        sobel,
+        hp
     }
     public partial class MainWindow : Window
     {
@@ -93,6 +96,12 @@ namespace grafzad3
                     break;
                 case TransformationType.median:
                     pixels = MedianTransformation(pixels, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight);
+                    break;
+                case TransformationType.sobel:
+                    pixels = SobelTransformation(pixels, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight);
+                    break;
+                case TransformationType.hp:
+                    pixels = HighPassTransformation(pixels, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight);
                     break;
 
             }
@@ -210,7 +219,6 @@ namespace grafzad3
                     List<int> green = new List<int>();
                     List<int> blue = new List<int>();
 
-                    int pixelCount = 1;//Middle
                     blue.Add(pixels[x + y * width]);
                     green.Add(pixels[x + 1 + y * width]);
                     red.Add(pixels[x + 2 + y * width]);
@@ -277,12 +285,82 @@ namespace grafzad3
                     green.Sort();
                     red.Sort();
 
-                    newPixels[x + y * width] = (byte)(blue[blue.Count/2]);
-                    newPixels[x + 1 + y * width] = (byte)(green[green.Count/2]);
-                    newPixels[x + 2 + y * width] = (byte)(red[red.Count/2]);
+                    newPixels[x + y * width] = (byte)(blue[blue.Count / 2]);
+                    newPixels[x + 1 + y * width] = (byte)(green[green.Count / 2]);
+                    newPixels[x + 2 + y * width] = (byte)(red[red.Count / 2]);
                 }
             }
 
+            return newPixels;
+        }
+
+        private byte[] SobelTransformation(byte[] pixels, int width, int height)
+        {
+            int[,] sobelX = { { -1, 0, 1 }, { -2, 0, 2 }, { -1, 0, 1 } };
+            int[,] sobelY = { { -1, -2, -1 }, { 0, 0, 0 }, { 1, 2, 1 } };
+            byte[] newPixels = new byte[pixels.Length];
+            width *= 4;
+            for (int y = 1; y < height - 1; y++)
+            {
+                for (int x = 4; x < width - 4; x += 4)
+                {
+                    int gradientX = 0;
+                    int gradientY = 0;
+
+                    for (int i = -1; i <= 1; i++)
+                    {
+                        for (int j = -4; j <= 4; j += 4)
+                        {
+                            gradientX += pixels[(x + j) + (y + i) * width] * sobelX[i + 1, (j / 4) + 1];
+                            gradientY += pixels[(x + j) + (y + i) * width] * sobelY[i + 1, (j / 4) + 1];
+                        }
+                    }
+
+                    int gradient = (int)Math.Sqrt(gradientX * gradientX + gradientY * gradientY);
+
+                    newPixels[x + y * width] = (byte)gradient;
+                    newPixels[x + 1 + y * width] = (byte)gradient;
+                    newPixels[x + 2 + y * width] = (byte)gradient;
+                }
+            }
+
+            return newPixels;
+        }
+
+        private byte[] HighPassTransformation(byte[] pixels, int width, int height)
+        {
+            int[,] highPassMask = {{-1, -1, -1},
+                    {-1, 9, -1},
+                    {-1, -1, -1}};
+            byte[] newPixels = new byte[pixels.Length];
+            width *= 4;
+            for (int y = 1; y < height - 1; y++)
+            {
+                for (int x = 4; x < width - 4; x += 4)
+                {
+                    int resultB = 0;
+                    int resultG = 0;
+                    int resultR = 0;
+
+                    for (int i = -1; i <= 1; i++)
+                    {
+                        for (int j = -4; j <= 4; j += 4)
+                        {
+                            resultB += pixels[(x + j) + (y + i) * width] * highPassMask[i + 1, (j / 4) + 1];
+                            resultG += pixels[(x + j) + 1 + (y + i) * width] * highPassMask[i + 1, (j / 4) + 1];
+                            resultR += pixels[(x + j) + 2 + (y + i) * width] * highPassMask[i + 1, (j / 4) + 1];
+                        }
+                    }
+
+                    resultB = Math.Max(0, Math.Min(255, resultB));
+                    resultG = Math.Max(0, Math.Min(255, resultG));
+                    resultR = Math.Max(0, Math.Min(255, resultR));
+
+                    newPixels[x + y * width] = (byte)resultB;
+                    newPixels[x + 1 + y * width] = (byte)resultG;
+                    newPixels[x + 2 + y * width] = (byte)resultR;
+                }
+            }
             return newPixels;
         }
 
@@ -415,6 +493,16 @@ namespace grafzad3
         private void Median_Click(object sender, RoutedEventArgs e)
         {
             GenerateImage(TransformationType.median);
+        }
+
+        private void Sobel_Click(object sender, RoutedEventArgs e)
+        {
+            GenerateImage(TransformationType.sobel);
+        }
+
+        private void HighFrequency_Click(object sender, RoutedEventArgs e)
+        {
+            GenerateImage(TransformationType.hp);
         }
     }
 }

@@ -24,6 +24,8 @@
         <Button x:Name="Gray" Content="Convert to Gray Scale" HorizontalAlignment="Left" Margin="2,291,0,0" VerticalAlignment="Top" Click="Gray_Click"/>
         <Button x:Name="Smoothing" Content="Smoothing" HorizontalAlignment="Left" Margin="703,33,0,0" VerticalAlignment="Top" Click="Smoothing_Click"/>
         <Button x:Name="Median" Content="Median" HorizontalAlignment="Left" Margin="703,60,0,0" VerticalAlignment="Top" Click="Median_Click"/>
+        <Button x:Name="Sobel" Content="Sobel" HorizontalAlignment="Left" Margin="707,85,0,0" VerticalAlignment="Top" Click="Sobel_Click"/>
+        <Button x:Name="HighFrequency" Content="HighPass" HorizontalAlignment="Left" Margin="692,110,0,0" VerticalAlignment="Top" Click="HighFrequency_Click"/>
 
 
     </Grid>
