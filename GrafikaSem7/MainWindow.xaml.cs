@@ -1,10 +1,12 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -20,17 +22,50 @@ namespace grafzad3
 {
     public partial class MainWindow : Window
     {
+
         enum pType { p1, p2 }
-        public event Action<string> LogEvent;
+
+        private ConcurrentQueue<Action> eventQueue = new ConcurrentQueue<Action>() { };
+        private CancellationTokenSource cancellationTokenSource;
+
+
+
+        private async Task ProcessEventsAsync()
+        {
+
+            while (!cancellationTokenSource.Token.IsCancellationRequested)
+            {
+
+                if (eventQueue.TryDequeue(out Action item))
+                {
+                    await Dispatcher.InvokeAsync(() =>
+                    {
+                        item.Invoke();
+                    });
+                }
+                else
+                {
+                    await Task.Delay(100); // Oczekiwanie na nowe zdarzenia
+                }
+            }
+        }
+
+
 
 
         public MainWindow()
         {
 
-
             InitializeComponent();
-            OpenImage();
+            Init();
+            eventQueue.Enqueue(OpenImage);
+            
 
+        }
+        public async void Init()
+        {
+            cancellationTokenSource = new CancellationTokenSource();
+            await Task.Run(() => ProcessEventsAsync(), cancellationTokenSource.Token);
         }
 
 
@@ -244,5 +279,7 @@ namespace grafzad3
             SaveImageAsP2(Image.Source as BitmapSource);
         }
         #endregion
+
+
     }
 }
