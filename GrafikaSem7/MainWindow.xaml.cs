@@ -1,23 +1,9 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using System.IO.Pipes;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Ink;
-using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Media.Media3D;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace grafzad3
 {
@@ -31,17 +17,18 @@ namespace grafzad3
     }
     public partial class MainWindow : Window
     {
-        int redValue = 0;
-        int blueValue = 0;
-        int greenValue = 0;
-        int factorValue = 1;
+        public static int redValue = 0;
+        public static int blueValue = 0;
+        public static int greenValue = 0;
+        public static int factorValue = 1;
 
         public MainWindow()
         {
             InitializeComponent();
             SetImage();
 
-        }
+        }        
+
 
 
 
@@ -113,7 +100,7 @@ namespace grafzad3
 
         }
 
-        private byte[] SmoothTransformation(byte[] pixels, int width, int heigh)
+        public  static byte[] SmoothTransformation(byte[] pixels, int width, int heigh)
         {
             byte[] newPixels = new byte[pixels.Length];
             width *= 4;
@@ -147,7 +134,7 @@ namespace grafzad3
                         avgG += pixels[x + 1 + (y - 1) * width];
                         avgR += pixels[x + 2 + (y - 1) * width];
                     }
-                    if (y > 0 && x < width)//U-R
+                    if (y > 0 && x < width-4)//U-R
                     {
                         // MessageBox.Show("U-R", x.ToString() + " " + y.ToString());
                         pixelCount += 1;
@@ -207,7 +194,7 @@ namespace grafzad3
 
             return newPixels;
         }
-        private byte[] MedianTransformation(byte[] pixels, int width, int heigh)
+        public  static byte[] MedianTransformation(byte[] pixels, int width, int heigh)
         {
             byte[] newPixels = new byte[pixels.Length];
             width *= 4;
@@ -238,7 +225,7 @@ namespace grafzad3
                         green.Add(pixels[x + 1 + (y - 1) * width]);
                         red.Add(pixels[x + 2 + (y - 1) * width]);
                     }
-                    if (y > 0 && x < width)//U-R
+                    if (y > 0 && x < width-4)//U-R
                     {
 
                         blue.Add(pixels[(x + 4) + (y - 1) * width]);
@@ -285,49 +272,19 @@ namespace grafzad3
                     green.Sort();
                     red.Sort();
 
-                    newPixels[x + y * width] = (byte)(blue[blue.Count / 2]);
-                    newPixels[x + 1 + y * width] = (byte)(green[green.Count / 2]);
-                    newPixels[x + 2 + y * width] = (byte)(red[red.Count / 2]);
+                    int medianB = blue.Count % 2 == 0 ? (blue[blue.Count/2]+ blue[blue.Count/2-1])/2 : blue[blue.Count / 2];
+                    int medianG = green.Count % 2 == 0 ? (green[green.Count/2]+ green[green.Count/2-1])/2 : green[green.Count / 2];
+                    int medianR = red.Count % 2 == 0 ? (red[red.Count/2]+ red[red.Count/2-1])/2 : red[red.Count / 2];
+
+                    newPixels[x + y * width] = (byte)(medianB);
+                    newPixels[x + 1 + y * width] = (byte)(medianG);
+                    newPixels[x + 2 + y * width] = (byte)(medianR);
                 }
             }
 
             return newPixels;
-        }
-
-        private byte[] SobelTransformation(byte[] pixels, int width, int height)
-        {
-            int[,] sobelX = { { -1, 0, 1 }, { -2, 0, 2 }, { -1, 0, 1 } };
-            int[,] sobelY = { { -1, -2, -1 }, { 0, 0, 0 }, { 1, 2, 1 } };
-            byte[] newPixels = new byte[pixels.Length];
-            width *= 4;
-            for (int y = 1; y < height - 1; y++)
-            {
-                for (int x = 4; x < width - 4; x += 4)
-                {
-                    int gradientX = 0;
-                    int gradientY = 0;
-
-                    for (int i = -1; i <= 1; i++)
-                    {
-                        for (int j = -4; j <= 4; j += 4)
-                        {
-                            gradientX += pixels[(x + j) + (y + i) * width] * sobelX[i + 1, (j / 4) + 1];
-                            gradientY += pixels[(x + j) + (y + i) * width] * sobelY[i + 1, (j / 4) + 1];
-                        }
-                    }
-
-                    int gradient = (int)Math.Sqrt(gradientX * gradientX + gradientY * gradientY);
-
-                    newPixels[x + y * width] = (byte)gradient;
-                    newPixels[x + 1 + y * width] = (byte)gradient;
-                    newPixels[x + 2 + y * width] = (byte)gradient;
-                }
-            }
-
-            return newPixels;
-        }
-
-        private byte[] HighPassTransformation(byte[] pixels, int width, int height)
+        }   
+        public  static byte[] HighPassTransformation(byte[] pixels, int width, int height)
         {
             int[,] highPassMask = {{-1, -1, -1},
                     {-1, 9, -1},
@@ -363,8 +320,7 @@ namespace grafzad3
             }
             return newPixels;
         }
-
-        byte[] AddRGB(byte[] pixels)
+        public  static byte[] AddRGB(byte[] pixels)
         {
             for (int i = 0; i < pixels.Length; i += 4)
             {
@@ -374,7 +330,7 @@ namespace grafzad3
             }
             return pixels;
         }
-        byte[] SubRGB(byte[] pixels)
+        public  static byte[] SubRGB(byte[] pixels)
         {
             for (int i = 0; i < pixels.Length; i += 4)
             {
@@ -384,7 +340,39 @@ namespace grafzad3
             }
             return pixels;
         }
-        byte[] MulRGB(byte[] pixels)
+        public  static byte[] SobelTransformation(byte[] pixels, int width, int height)
+        {
+            int[,] sobelX = { { -1, 0, 1 }, { -2, 0, 2 }, { -1, 0, 1 } };
+            int[,] sobelY = { { -1, -2, -1 }, { 0, 0, 0 }, { 1, 2, 1 } };
+            byte[] newPixels = new byte[pixels.Length];
+            width *= 4;
+            for (int y = 1; y < height - 1; y++)
+            {
+                for (int x = 4; x < width - 4; x += 4)
+                {
+                    int gradientX = 0;
+                    int gradientY = 0;
+
+                    for (int i = -1; i <= 1; i++)
+                    {
+                        for (int j = -4; j <= 4; j += 4)
+                        {
+                            gradientX += pixels[(x + j) + (y + i) * width] * sobelX[i + 1, (j / 4) + 1];
+                            gradientY += pixels[(x + j) + (y + i) * width] * sobelY[i + 1, (j / 4) + 1];
+                        }
+                    }
+
+                    int gradient = (int)Math.Sqrt(gradientX * gradientX + gradientY * gradientY);
+
+                    newPixels[x + y * width] = (byte)gradient;
+                    newPixels[x + 1 + y * width] = (byte)gradient;
+                    newPixels[x + 2 + y * width] = (byte)gradient;
+                }
+            }
+
+            return newPixels;
+        }
+        public  static byte[] MulRGB(byte[] pixels)
         {
             for (int i = 0; i < pixels.Length; i += 4)
             {
@@ -394,7 +382,7 @@ namespace grafzad3
             }
             return pixels;
         }
-        byte[] DivRGB(byte[] pixels)
+        public  static byte[] DivRGB(byte[] pixels)
         {
             if (redValue == 0 || blueValue == 0 || greenValue == 0)
             {
@@ -411,7 +399,7 @@ namespace grafzad3
             }
             return pixels;
         }
-        byte[] ChangeBrightness(byte[] pixels)
+        public  static byte[] ChangeBrightness(byte[] pixels)
         {
             for (int i = 0; i < pixels.Length; i += 4)
             {
@@ -421,8 +409,7 @@ namespace grafzad3
             }
             return pixels;
         }
-
-        byte[] ChangeToGray(byte[] pixels)
+        public  static byte[] ChangeToGray(byte[] pixels)
         {
             for (int i = 0; i < pixels.Length; i += 4)
             {
@@ -434,22 +421,18 @@ namespace grafzad3
             }
             return pixels;
         }
-
-
-        private void Add_RGB_Click(object sender, RoutedEventArgs e)
+        private   void Add_RGB_Click(object sender, RoutedEventArgs e)
         {
             GenerateImage(TransformationType.add);
         }
-        private void Sub_RGB_Click(object sender, RoutedEventArgs e)
+        private   void Sub_RGB_Click(object sender, RoutedEventArgs e)
         {
             GenerateImage(TransformationType.sub);
         }
-
         private void RedTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             int.TryParse(RedTextBox.Text, out redValue);
         }
-
         private void GreenTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             int.TryParse(GreenTextBox.Text, out greenValue);
