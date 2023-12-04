@@ -8,24 +8,17 @@
         Title="MainWindow" Height="450" Width="800">
     <Grid>
         <Image RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased" x:Name="Image"></Image>
-        <Button x:Name="Add_RGB" Content="Add RGB" HorizontalAlignment="Left" Margin="10,89,0,0" VerticalAlignment="Top" Click="Add_RGB_Click"/>
-        <TextBox x:Name="RedTextBox" HorizontalAlignment="Left" Margin="0,66,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="29" TextChanged="RedTextBox_TextChanged"/>
-        <TextBox x:Name="GreenTextBox" HorizontalAlignment="Left" Margin="37,66,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="28" TextChanged="GreenTextBox_TextChanged"/>
-        <TextBox x:Name="BlueTextBox" HorizontalAlignment="Left" Margin="74,66,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="29" TextChanged="BlueTextBox_TextChanged"/>
-        <Label Content="red" HorizontalAlignment="Left" Margin="-2,40,0,0" VerticalAlignment="Top"/>
-        <Label Content="green" HorizontalAlignment="Left" Margin="31,40,0,0" VerticalAlignment="Top"/>
-        <Label Content="blue" HorizontalAlignment="Left" Margin="70,40,0,0" VerticalAlignment="Top"/>
-        <Button x:Name="Sub_RGB" Content="Sub RGB" HorizontalAlignment="Left" Margin="10,114,0,0" VerticalAlignment="Top" Click="Sub_RGB_Click"/>
-        <Label Content="Factor" HorizontalAlignment="Left" Margin="2,217,0,0" VerticalAlignment="Top"/>
-        <TextBox x:Name="FactorTextBox" HorizontalAlignment="Left" Margin="6,243,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="41" TextChanged="FactorTextBox_TextChanged"/>
-        <Button x:Name="Multiplication" Content="Multiplication" HorizontalAlignment="Left" Margin="6,139,0,0" VerticalAlignment="Top" Click="Multiplication_Click"/>
-        <Button x:Name="Divison" Content="Divison" HorizontalAlignment="Left" Margin="10,164,0,0" VerticalAlignment="Top" Click="Divison_Click"/>
-        <Button x:Name="Brightness" Content="Brightness" HorizontalAlignment="Left" Margin="5,266,0,0" VerticalAlignment="Top" Click="Brightness_Click"/>
-        <Button x:Name="Gray" Content="Convert to Gray Scale" HorizontalAlignment="Left" Margin="2,291,0,0" VerticalAlignment="Top" Click="Gray_Click"/>
-        <Button x:Name="Smoothing" Content="Smoothing" HorizontalAlignment="Left" Margin="703,33,0,0" VerticalAlignment="Top" Click="Smoothing_Click"/>
-        <Button x:Name="Median" Content="Median" HorizontalAlignment="Left" Margin="703,60,0,0" VerticalAlignment="Top" Click="Median_Click"/>
-        <Button x:Name="Sobel" Content="Sobel" HorizontalAlignment="Left" Margin="707,85,0,0" VerticalAlignment="Top" Click="Sobel_Click"/>
-        <Button x:Name="HighFrequency" Content="HighPass" HorizontalAlignment="Left" Margin="692,110,0,0" VerticalAlignment="Top" Click="HighFrequency_Click"/>
+        <Button Content="Rozszerz_Histogram" HorizontalAlignment="Left" Margin="685,42,0,0" VerticalAlignment="Top" Click="Rozszerz_Histogram_Click"/>
+        <Button Content="wyrownaj_Histogram" HorizontalAlignment="Left" Margin="691,67,0,0" VerticalAlignment="Top" Click="Wyrownaj_Histogram_Click"/>
+        <Label Content="zmienna do tych&#xD;&#xA; wszystkich przycskow" HorizontalAlignment="Left" Margin="4,115,0,0" VerticalAlignment="Top" Height="54"/>
+        <TextBox Name="prog_TextBox"  HorizontalAlignment="Left" Margin="8,169,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="120" TextChanged="TextBox_TextChanged"/>
+        <Button Content="Binarization próg" HorizontalAlignment="Left" Margin="8,192,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.201,0.075" Width="120" Click="Button_Click"/>
+        <Button Content="Black % threshold" HorizontalAlignment="Left" Margin="10,217,0,0" VerticalAlignment="Top" Width="118" Click="Button_Click_1"/>
+        <Button Content="New Image" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="-0.263,0.005" Click="Button_Click_2" Margin="726,10,0,0"/>
+        <Button Content="Mean Iterative Selection" HorizontalAlignment="Left" Margin="12,242,0,0" VerticalAlignment="Top" Click="Button_Click_3"/>
+        <Button Content="Otsu" HorizontalAlignment="Left" Margin="12,72,0,0" VerticalAlignment="Top" Click="Button_Click_4" RenderTransformOrigin="2.083,-0.69"/>
+        <Button Content="nickleback" HorizontalAlignment="Left" Margin="12,267,0,0" VerticalAlignment="Top" Click="Button_Click_5" Width="132"/>
+        <Button Content="Bensen" HorizontalAlignment="Left" Margin="12,52,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.058,0.392" Click="Button_Click_6"/>
 
 
     </Grid>
