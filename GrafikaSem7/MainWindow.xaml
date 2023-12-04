@@ -18,8 +18,21 @@
         <Button Content="Mean Iterative Selection" HorizontalAlignment="Left" Margin="12,242,0,0" VerticalAlignment="Top" Click="Button_Click_3"/>
         <Button Content="Otsu" HorizontalAlignment="Left" Margin="12,72,0,0" VerticalAlignment="Top" Click="Button_Click_4" RenderTransformOrigin="2.083,-0.69"/>
         <Button Content="nickleback" HorizontalAlignment="Left" Margin="12,267,0,0" VerticalAlignment="Top" Click="Button_Click_5" Width="132"/>
-        <Button Content="Bensen" HorizontalAlignment="Left" Margin="12,52,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.058,0.392" Click="Button_Click_6"/>
+        <Button Content="Bensen" HorizontalAlignment="Left" Margin="12,292,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.058,0.392" Click="Button_Click_6" Width="132"/>
+        <Button Content="Eresion" HorizontalAlignment="Left" Margin="697,115,0,0" VerticalAlignment="Top" Width="80" Click="Button_Click_7"/>
+        <Button Content="Dylatation" HorizontalAlignment="Left" Margin="697,140,0,0" VerticalAlignment="Top" Width="80" Click="Button_Click_8"/>
+        <Button Content="Otwarce" HorizontalAlignment="Left" Margin="698,169,0,0" VerticalAlignment="Top" Width="79" Click="Button_Click_9"/>
+        <Button Content="Domkniecie" HorizontalAlignment="Left" Margin="698,202,0,0" VerticalAlignment="Top" Width="80" Click="Button_Click_10"/>
+        <Button Content="Hit or Miss" HorizontalAlignment="Left" Margin="698,226,0,0" VerticalAlignment="Top" Width="80" Click="Button_Click_11"/>
 
+        <Label Content="red" HorizontalAlignment="Left" Margin="652,241,0,0" VerticalAlignment="Top"/>
+        <TextBox Name="redTB" HorizontalAlignment="Left" Margin="660,267,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="22" TextChanged="TextBox_TextChanged_1"/>
+        <Label Content="green" HorizontalAlignment="Left" Margin="700,241,0,0" VerticalAlignment="Top"/>
+        <Label Content="blue" HorizontalAlignment="Left" Margin="746,241,0,0" VerticalAlignment="Top"/>
+        <TextBox  Name="greenTB" HorizontalAlignment="Left" Margin="709,267,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="22" RenderTransformOrigin="2.136,0.559" TextChanged="greenTB_TextChanged"/>
+        <TextBox Name="blueTB" HorizontalAlignment="Left" Margin="752,267,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="22" TextChanged="blueTB_TextChanged"/>
+        <TextBox x:Name="toleranceTB" HorizontalAlignment="Left" Margin="702,369,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="22" RenderTransformOrigin="1.182,5.347" TextChanged="toleranceTB_TextChanged"/>
+        <Label Content="tolerance" HorizontalAlignment="Left" Margin="685,338,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.03,0.618"/>
 
     </Grid>
 </Window>

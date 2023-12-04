@@ -25,8 +25,8 @@ namespace grafzad3
 {
     public class Pixel
     {
-        public int red=0;
-        public int green=0;
+        public int red = 0;
+        public int green = 0;
         public int blue = 0;
         public int avg = 0;
         public Pixel(int red, int green, int blue)
@@ -45,7 +45,13 @@ namespace grafzad3
         bpt,
         iterative,
         otsu,
-        nickleback
+        nickleback,
+        erosion,
+        dylatation,
+        otwarcie,
+        domkniecie,
+        hitormiss,
+        besens
     }
     public partial class MainWindow : Window
     {
@@ -132,7 +138,32 @@ namespace grafzad3
                     pixels = Otsu(pixels, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight);
                     break;
                 case TransformationType.nickleback:
-                    pixels = Nickleback(pixels, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight,prog);
+                    pixels = Nickleback(pixels, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight, prog);
+                    break;
+                case TransformationType.erosion:
+                    pixels = EresionDylatation(pixels, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight, 0);
+                    break;
+                case TransformationType.dylatation:
+                    pixels = EresionDylatation(pixels, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight, 255);
+                    break;
+                case TransformationType.otwarcie:
+                    pixels = EresionDylatation(pixels, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight, 0);
+                    pixels = EresionDylatation(pixels, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight, 255);
+                    break;
+                case TransformationType.domkniecie:
+                    pixels = EresionDylatation(pixels, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight, 255);
+                    pixels = EresionDylatation(pixels, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight, 0);
+                    break;
+                case TransformationType.hitormiss:
+                    pixels = EresionDylatation(pixels, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight, 255);
+                    byte[] invPixels = new byte[pixels.Length];
+                    invPixels = InvertArray(pixels, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight);
+                    invPixels = EresionDylatation(invPixels, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight, 0);
+                    pixels = EresionDylatation(pixels, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight, 0);
+                    pixels = AndArrayOperation(pixels, invPixels, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight);
+                    break;
+                case TransformationType.besens:
+                    pixels = Besens(pixels, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight);
                     break;
             }
 
@@ -140,6 +171,140 @@ namespace grafzad3
 
             writeableBitmap.WritePixels(new Int32Rect(0, 0, writeableBitmap.PixelWidth, writeableBitmap.PixelHeight), pixels, stride, 0);
             Image.Source = writeableBitmap;
+
+        }
+        byte[] Besens(byte[] pixels, int width, int height)
+        {
+
+            byte[] newPixels = new byte[pixels.Length];
+            width *= 4;
+
+            for (int y = 0; y < height - 1; y++)
+            {
+                for (int x = 0; x < width; x += 4)
+                {
+                    List<int> pixelsInRange = GetPixelsInRadius(pixels, width, height, x, y, 3);
+                    int min = pixelsInRange.Min();
+                    int max = pixelsInRange.Max();
+                    int contrast = max - min;
+
+                    int threshold = prog;
+
+                    if (contrast < threshold)
+                    {
+                        newPixels[x + y * width] = 0;
+                        newPixels[x + 1 + y * width] = 0;
+                        newPixels[x + 2 + y * width] = 0;
+                    }
+                    else
+                    {
+                        newPixels[x + y * width] = 255;
+                        newPixels[x + 1 + y * width] = 255;
+                        newPixels[x + 2 + y * width] = 255;
+                    }
+                    newPixels[x + 3 + y * width] = 255;
+                }
+            }
+
+            return newPixels;
+        }
+        byte[] AndArrayOperation(byte[] pixels, byte[] pixels2, int width, int height)
+        {
+            byte[] newPixels = new byte[pixels.Length];
+            width *= 4;
+
+            for (int y = 0; y < height - 1; y++)
+            {
+                for (int x = 0; x < width; x += 4)
+                {
+                    if (pixels[x + y * width] != pixels2[x + y * width])
+                    {
+                        newPixels[x + y * width] = 255;
+                        newPixels[x + 1 + y * width] = 255;
+                        newPixels[x + 2 + y * width] = 255;
+                        newPixels[x + 3 + y * width] = 255;
+                    }
+                    else
+                    {
+                        newPixels[x + y * width] = 0;
+                        newPixels[x + 1 + y * width] = 0;
+                        newPixels[x + 2 + y * width] = 0;
+                        newPixels[x + 3 + y * width] = 255;
+                    }
+                }
+            }
+
+            return newPixels;
+        }
+        byte[] InvertArray(byte[] pixels, int width, int height)
+        {
+            byte[] newPixels = new byte[pixels.Length];
+            width *= 4;
+
+            for (int y = 0; y < height - 1; y++)
+            {
+                for (int x = 0; x < width; x += 4)
+                {
+                    newPixels[x + y * width] = pixels[x + 0 + y * width] == 0 ? (byte)255 : (byte)0;
+                    newPixels[x + 1 + y * width] = pixels[x + 1 + y * width] == 0 ? (byte)255 : (byte)0;
+                    newPixels[x + 2 + y * width] = pixels[x + 2 + y * width] == 0 ? (byte)255 : (byte)0;
+                    newPixels[x + 3 + y * width] = 255;
+                }
+            }
+
+            return newPixels;
+        }
+
+        byte[] EresionDylatation(byte[] pixels, int width, int height, int blackOrWhite = 0)
+        {
+
+            byte[] newPixels = new byte[pixels.Length];
+            width *= 4;
+            newPixels[3] = 255;
+
+            for (int y = 0; y < height - 1; y++)
+            {
+                for (int x = 0; x < width; x += 4)
+                {
+                    newPixels[x + y * width] = pixels[x + y * width];
+                    newPixels[x + 1 + y * width] = pixels[x + y * width];
+                    newPixels[x + 2 + y * width] = pixels[x + y * width];
+                    newPixels[x + 3 + y * width] = 255;
+                }
+            }
+
+            for (int y = 0; y < height - 1; y++)
+            {
+                for (int x = 0; x < width; x += 4)
+                {
+                    int radius = 1;
+                    int center = x + y * width;
+
+                    for (int i = -radius; i <= radius; i++)
+                    {
+                        for (int j = -radius * 4; j <= radius * 4; j += 4)
+                        {
+                            if (0 < center + j + i * width && center + 3 + j + i * width < pixels.Length)
+                            {
+
+
+                                if (pixels[center] == blackOrWhite)
+                                {
+                                    newPixels[center + j + i * width] = (byte)blackOrWhite;
+                                    newPixels[center + 1 + j + i * width] = (byte)blackOrWhite;
+                                    newPixels[center + 2 + j + i * width] = (byte)blackOrWhite;
+
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+
+            return newPixels;
+
+
 
         }
         byte[] Otsu(byte[] pixels, int width, int height)
@@ -215,13 +380,13 @@ namespace grafzad3
             return newPixels;
         }
 
-        byte[] Nickleback(byte[] pixels, int width, int height,int k=1)
+        byte[] Nickleback(byte[] pixels, int width, int height, int k = 1)
         {
             int[] histogram = new int[255];
             histogram = CreateAvgHistogram(red, green, blue);
-            
 
-            
+
+
 
             byte[] newPixels = new byte[pixels.Length];
             width *= 4;
@@ -230,11 +395,11 @@ namespace grafzad3
             {
                 for (int x = 0; x < width; x += 4)
                 {
-                    List<int> pixelsInRange = GetPixelsInRadius( pixels,  width, height,x,y,4);
-                    double avgInRange= pixelsInRange.Average();
+                    List<int> pixelsInRange = GetPixelsInRadius(pixels, width, height, x, y, 4);
+                    double avgInRange = pixelsInRange.Average();
 
                     double SumSquare = 0;
-                    foreach(int i in pixelsInRange)
+                    foreach (int i in pixelsInRange)
                     {
                         SumSquare += (i - avgInRange) * (i - avgInRange);
 
@@ -242,7 +407,7 @@ namespace grafzad3
 
                     double stdDev = Math.Sqrt(SumSquare / pixelsInRange.Count);
 
-                    int threshold = (int)(avgInRange+k*stdDev);
+                    int threshold = (int)(avgInRange + k * stdDev);
 
                     var avg = (pixels[x + y * width] + pixels[x + 1 + y * width] + pixels[x + 2 + y * width]) / 3;
 
@@ -264,19 +429,19 @@ namespace grafzad3
 
             return newPixels;
         }
-        
-        List<int> GetPixelsInRadius(byte[] pixels, int width, int height, int x, int y, int radius=1)
+
+        List<int> GetPixelsInRadius(byte[] pixels, int width, int height, int x, int y, int radius = 1)
         {
             List<int> newPixels = new();
             int center = x + y * width;
 
-            for (int i= -radius;i<=radius;i++)
+            for (int i = -radius; i <= radius; i++)
             {
                 for (int j = -radius * 4; j <= radius * 4; j += 4)
                 {
-                    if (0 < center + j + i * width && center +3+ j + i * width < pixels.Length)
+                    if (0 < center + j + i * width && center + 3 + j + i * width < pixels.Length)
                     {
-                        newPixels.Add((pixels[center + j + i * width]+ pixels[center +1+ j + i * width]+ pixels[center +2+ j + i * width]) /3);
+                        newPixels.Add((pixels[center + j + i * width] + pixels[center + 1 + j + i * width] + pixels[center + 2 + j + i * width]) / 3);
 
                     }
                 }
@@ -286,7 +451,7 @@ namespace grafzad3
 
             return newPixels;
         }
-        
+
         byte[] Iterative(byte[] pixels, int width, int height, int maxIter)
         {
             float tolerance = 1;
@@ -968,6 +1133,51 @@ namespace grafzad3
         }
 
         private void Button_Click_6(object sender, RoutedEventArgs e)
+        {
+            GenerateImage(TransformationType.besens);
+        }
+
+        private void Button_Click_7(object sender, RoutedEventArgs e)
+        {
+            GenerateImage(TransformationType.erosion);
+        }
+
+        private void Button_Click_8(object sender, RoutedEventArgs e)
+        {
+            GenerateImage(TransformationType.dylatation);
+        }
+
+        private void Button_Click_9(object sender, RoutedEventArgs e)
+        {
+            GenerateImage(TransformationType.otwarcie);
+        }
+
+        private void Button_Click_10(object sender, RoutedEventArgs e)
+        {
+            GenerateImage(TransformationType.domkniecie);
+        }
+
+        private void Button_Click_11(object sender, RoutedEventArgs e)
+        {
+            GenerateImage(TransformationType.hitormiss);
+        }
+
+        private void toleranceTB_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            
+        }
+
+        private void TextBox_TextChanged_1(object sender, TextChangedEventArgs e)
+        {
+
+        }
+
+        private void greenTB_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
+        }
+
+        private void blueTB_TextChanged(object sender, TextChangedEventArgs e)
         {
 
         }
