@@ -16,10 +16,12 @@
         <Label Content="blue" HorizontalAlignment="Left" Margin="746,241,0,0" VerticalAlignment="Top"/>
         <TextBox  Name="greenTB" HorizontalAlignment="Left" Margin="709,267,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="22" RenderTransformOrigin="2.136,0.559" TextChanged="greenTB_TextChanged"/>
         <TextBox Name="blueTB" HorizontalAlignment="Left" Margin="752,267,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="22" TextChanged="blueTB_TextChanged"/>
-        <TextBox x:Name="toleranceTB" HorizontalAlignment="Left" Margin="702,369,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="22" RenderTransformOrigin="1.182,5.347" TextChanged="toleranceTB_TextChanged"/>
-        <Label Content="tolerance" HorizontalAlignment="Left" Margin="685,338,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.03,0.618"/>
+        <TextBox x:Name="toleranceTB" HorizontalAlignment="Left" Margin="666,369,0,0" TextWrapping="Wrap" Text="50" VerticalAlignment="Top" Width="22" RenderTransformOrigin="1.182,5.347" TextChanged="toleranceTB_TextChanged"/>
+        <Label Content="tolerance" HorizontalAlignment="Left" Margin="658,338,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.03,0.618"/>
         <Button Content="find color" HorizontalAlignment="Left" Margin="660,313,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.614,0.022" Width="114" Click="Button_Click_12"/>
         <Button Content="find green" HorizontalAlignment="Left" Margin="685,197,0,0" VerticalAlignment="Top" Click="Button_Click_13"/>
+        <Label Content="prct bledu" HorizontalAlignment="Left" Margin="722,338,0,0" VerticalAlignment="Top"/>
+        <TextBox Name="prctTB" HorizontalAlignment="Left" Margin="714,369,0,0" TextWrapping="Wrap" Text="3" VerticalAlignment="Top" Width="120" TextChanged="TextBox_TextChanged"/>
 
     </Grid>
 </Window>

@@ -51,7 +51,7 @@ namespace grafzad3
         int findBlue = 0;
 
         int tolerance = 50;
-
+        double prct = 0.03;
 
         WriteableBitmap writeableBitmap;
         int stride;
@@ -138,7 +138,7 @@ namespace grafzad3
                     int g = Math.Abs(pixels[x + 1 + y * width]);
                     int r = Math.Abs(pixels[x + 2 + y * width]);
 
-                    var prct = 0.03;
+                    
 
                     int rDif = g - r;
                     int bDif = g - b;
@@ -227,7 +227,13 @@ namespace grafzad3
                 }
 
             }
-            MessageBox.Show(pos + " " + max);
+            var sum = 0;
+            foreach(List<(int x, int y)> point in listOfPoints)
+            {
+                sum += point.Count;
+            }
+
+            MessageBox.Show( Math.Round((double)sum / (double)pixels.Length*4 * 100)+"% terenu to tereny zielone");
 
             foreach ((int x, int y) point in listOfPoints[pos])
             {
@@ -792,6 +798,11 @@ namespace grafzad3
         private void Button_Click_13(object sender, RoutedEventArgs e)
         {
             GenerateImage(TransformationType.findGreen);
+        }
+
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            prct =Double.Parse(prctTB.Text)/100;
         }
     }
 }
