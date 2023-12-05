@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,264 +23,355 @@ namespace grafzad3
 {
     public partial class MainWindow : Window
     {
+        bool bezier = true;
+        private List<Point> controlPoints = new List<Point>();
+        private Polyline bezierCurve = new Polyline();
+        private int draggedPointIndex = -1;
 
-        enum pType { p1, p2 }
+        private List<Point> polygonPoints = new List<Point>();
+        private Polygon currentPolygon;
+        private Point startPoint;
+        private TransformType currentTransform = TransformType.None;
 
-        private ConcurrentQueue<Action> eventQueue = new ConcurrentQueue<Action>() { };
-        private CancellationTokenSource cancellationTokenSource;
-
-
-
-        private async Task ProcessEventsAsync()
+        public enum TransformType
         {
-
-            while (!cancellationTokenSource.Token.IsCancellationRequested)
-            {
-
-                if (eventQueue.TryDequeue(out Action item))
-                {
-                    await Dispatcher.InvokeAsync(() =>
-                    {
-                        item.Invoke();
-                    });
-                }
-                else
-                {
-                    await Task.Delay(100); // Oczekiwanie na nowe zdarzenia
-                }
-            }
+            None,
+            Translate,
+            Rotate,
+            Scale
         }
-
-
 
 
         public MainWindow()
         {
-
             InitializeComponent();
-            Init();
-            eventQueue.Enqueue(OpenImage);
-            
+            canvas.Children.Add(bezierCurve);
 
         }
-        public async void Init()
+
+
+
+
+        #region save
+        private void SaveFiguresToFile(string fileName)
         {
-            cancellationTokenSource = new CancellationTokenSource();
-            await Task.Run(() => ProcessEventsAsync(), cancellationTokenSource.Token);
-        }
-
-
-        #region  zad3
-        string GetStringFromFileDialog()
-        {
-            string fileContent = string.Empty;
-            OpenFileDialog dialog = new OpenFileDialog();
-            dialog.FileName = "Document";
-            dialog.DefaultExt = ".txt";
-            //dialog.Filter = "Text documents (*.txt)|*.txt|P1 files (*.pbm)|*.pbm|P2Files (*.pgm)|*.pgm";
-            dialog.Filter = "Text documents (*.txt)|*.txt|P1 files (*.pbm)|*.pbm|P2Files (*.pgm)|*.pgm";
-
-            bool? result = dialog.ShowDialog();
-            Stream file;
-
-            file = dialog.OpenFile();
-            using (StreamReader reader = new StreamReader(file))
+            using (FileStream fs = new FileStream(fileName, FileMode.Create))
             {
-                fileContent = reader.ReadToEnd();
+                DataContractSerializer serializer = new DataContractSerializer(typeof(List<List<Point>>));
+                serializer.WriteObject(fs, GetFigures());
             }
-            return fileContent;
         }
-        void OpenImage()
+
+        private void LoadFiguresFromFile(string fileName)
         {
-            pType imageType = pType.p1;
-
-            List<byte> pixelByteArray = new List<byte>();
-
-            int heigh = 0, width = 0;
-
-            string fileContent = GetStringFromFileDialog();
-
-            //MessageBox.Show(fileContent, "File Content at path: ", MessageBoxButton.OK);
-
-
-            int first3varaibles = 0;//ustawiwanie metadata
-            for (int i = 0; i < fileContent.Length; i++)
+            if (File.Exists(fileName))
             {
-                if (fileContent[i].Equals('#'))
-                    fileContent = DeleteCommentedLine(fileContent, i, out i);
-
-                if (!IsWhiteSign(fileContent[i]))
+                using (FileStream fs = new FileStream(fileName, FileMode.Open))
                 {
-                    var extracted = ExtractNumber(fileContent, i, out i);
+                    DataContractSerializer serializer = new DataContractSerializer(typeof(List<List<Point>>));
+                    List<List<Point>> loadedFigures = (List<List<Point>>)serializer.ReadObject(fs);
 
-                    if (first3varaibles == 0)
+                    controlPoints.Clear();
+                    bezierCurve.Points.Clear();
+                    DrawControlPoints();
+
+                    polygonPoints.Clear();
+
+                    foreach (List<Point> figurePoints in loadedFigures)
                     {
-                        if (extracted.ToLower().Equals("p1"))
-                            imageType = pType.p1;
-                        if (extracted.ToLower().Equals("p2"))
-                            imageType = pType.p2;
+                        polygonPoints = figurePoints;
+                        DrawPolygon();
                     }
-                    else if (first3varaibles == 1)
-                    {
-                        width = int.Parse(extracted);
-                    }
-                    else if (first3varaibles == 2)
-                    {
-                        heigh = int.Parse(extracted);
-                    }
-                    else
-                    {
-                        if (imageType == pType.p1)//musialem tak zrobic bo nie wiadomo dlaczego  nie dziala bitmapsource.Create() w przypadku 1 bitow pixeli
-                        {
-                            if (extracted.Length > 1)
-                            {
-                                char[] splitted = extracted.ToCharArray();
-                                foreach (char s in splitted)
-                                {
-
-
-                                    if (int.Parse(s.ToString()).Equals(0))
-                                        pixelByteArray.Add((byte)0);
-                                    else if (int.Parse(s.ToString()).Equals(1))
-                                        pixelByteArray.Add((byte)255);
-                                }
-                            }
-                            else
-                            {
-                                if (int.Parse(extracted).Equals(0))
-                                    pixelByteArray.Add((byte)0);
-                                else if (int.Parse(extracted).Equals(1))
-                                    pixelByteArray.Add((byte)255);
-                            }
-
-                        }
-                        else
-                        {
-                            pixelByteArray.Add((byte)int.Parse(extracted));
-                        }
-
-                    }
-                    first3varaibles++;
                 }
             }
-            GenerateImage(width, heigh, pixelByteArray, imageType);
-
         }
 
-        void GenerateImage(int width, int heigh, List<Byte> pixels, pType imageType)
+        private List<List<Point>> GetFigures()
         {
-            var array = pixels.ToArray();
-
-            BitmapSource bitmapSource = null;
-
-            int rawStride = (width * 8 + 7) / 8;
-            bitmapSource = BitmapSource.Create(width, heigh, 300, 300, PixelFormats.Indexed8, BitmapPalettes.Gray256, array, rawStride);
-
-            Image.Source = bitmapSource;
-
-        }
-
-        bool IsWhiteSign(char c)
-        {
-            if ((c.Equals('\n') || c.Equals(' ') || c.Equals('\t') || c.Equals('\r')))
+            List<List<Point>> figures = new List<List<Point>>();
+            foreach (UIElement element in canvas.Children)
             {
-                return true;
+                if (element is Polygon polygon)
+                {
+                    List<Point> figurePoints = new List<Point>(polygon.Points);
+                    figures.Add(figurePoints);
+                }
             }
-            return false;
-        }
-        string DeleteCommentedLine(string file, int pos, out int i)
-        {
-            char[] fileInChar = file.ToCharArray();
-            while (!file[pos].Equals('\n'))
-            {
-
-                fileInChar[pos] = ' ';
-
-                pos++;
-            }
-            i = pos;
-            return new string(fileInChar);
-        }
-        string ExtractNumber(string file, int pos, out int i)
-        {
-            string exctractedNumber = string.Empty;
-            while (file.Length > pos && !IsWhiteSign(file[pos]))
-            {
-                exctractedNumber += file[pos];
-
-                pos++;
-            }
-
-            i = pos;
-            return exctractedNumber;
-        }
-
-
-
-        void SaveImageAsP2(BitmapSource bitmapSource)
-        {
-            int arrayCount = bitmapSource.PixelHeight * bitmapSource.PixelWidth;
-            byte[] ar = new byte[arrayCount];
-            var stride = (bitmapSource.PixelWidth * 8 + 7) / 8;
-            bitmapSource.CopyPixels(ar, stride, 0);
-
-
-            var imageData = "p2 \n" + bitmapSource.PixelWidth + " " + bitmapSource.PixelHeight + "\n";
-            foreach (byte b in ar)
-            {
-                imageData += b.ToString() + "\n";
-            }
-
-
-            string docPath =
-              Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-
-            using (StreamWriter outputFile = new StreamWriter(System.IO.Path.Combine(docPath, "ImageP2.txt")))
-            {
-                outputFile.WriteLine(imageData);
-                MessageBox.Show("File was saved in documents folder!");
-            }
-        }
-        void SaveImageAsP1(BitmapSource bitmapSource)
-        {
-            int arrayCount = bitmapSource.PixelHeight * bitmapSource.PixelWidth;
-            byte[] ar = new byte[arrayCount];
-            var stride = (bitmapSource.PixelWidth * 8 + 7) / 8;
-            bitmapSource.CopyPixels(ar, stride, 0);
-
-
-            var imageData = "p1 \n" + bitmapSource.PixelWidth + " " + bitmapSource.PixelHeight + "\n";
-            foreach (byte b in ar)
-            {
-                if (b == 0)
-                    imageData += b.ToString() + "\n";
-                else
-                    imageData += 1 + "\n";
-            }
-
-
-            string docPath =
-              Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-
-            using (StreamWriter outputFile = new StreamWriter(System.IO.Path.Combine(docPath, "ImageP2.txt")))
-            {
-                outputFile.WriteLine(imageData);
-                MessageBox.Show("File was saved in documents folder!");
-            }
-        }
-
-
-
-        private void Button_Click_1(object sender, RoutedEventArgs e)
-        {
-            SaveImageAsP1(Image.Source as BitmapSource);
-        }
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            SaveImageAsP2(Image.Source as BitmapSource);
+            return figures;
         }
         #endregion
 
+        #region bezier
+        private void DrawBezierCurve()
+        {
+            if (controlPoints.Count < 2) return;
 
+            // Aktualizuj krzywą Béziera
+            bezierCurve.Points.Clear();
+            for (double t = 0; t <= 1; t += 0.01)
+            {
+                Point point = CalculateBezierPoint(t, controlPoints);
+                bezierCurve.Points.Add(point);
+            }
+
+            // Aktualizuj punkty kontrolne na ekranie
+            DrawControlPoints();
+
+            // Odśwież widok
+            bezierCurve.Stroke = Brushes.Black;
+            bezierCurve.StrokeThickness = 2;
+        }
+
+        private void DrawControlPoints()
+        {
+            canvas.Children.Clear();
+            canvas.Children.Add(bezierCurve);
+
+            foreach (Point point in controlPoints)
+            {
+                Ellipse ellipse = new Ellipse
+                {
+                    Width = 10,
+                    Height = 10,
+                    Fill = Brushes.Red,
+                    Margin = new Thickness(point.X - 5, point.Y - 5, 0, 0)
+                };
+
+                canvas.Children.Add(ellipse);
+            }
+        }
+
+        private Point CalculateBezierPoint(double t, List<Point> points)
+        {
+            int n = points.Count - 1;
+            double x = 0, y = 0;
+
+            for (int i = 0; i <= n; i++)
+            {
+                double factor = BinomialCoefficient(n, i) * Math.Pow(1 - t, n - i) * Math.Pow(t, i);
+                x += factor * points[i].X;
+                y += factor * points[i].Y;
+            }
+
+            return new Point(x, y);
+        }
+
+        private int BinomialCoefficient(int n, int k)
+        {
+            int result = 1;
+
+            for (int i = 1; i <= k; i++)
+            {
+                result = result * (n - i + 1) / i;
+            }
+
+            return result;
+        }
+        #endregion
+
+        #region polygons
+        private void DrawPolygon()
+        {
+            if (currentPolygon != null)
+            {
+                canvas.Children.Remove(currentPolygon);
+            }
+
+            currentPolygon = new Polygon
+            {
+                Points = new PointCollection(polygonPoints),
+                Stroke = Brushes.Black,
+                StrokeThickness = 2,
+                Fill = Brushes.LightBlue
+            };
+
+            canvas.Children.Add(currentPolygon);
+        }
+
+        private void Translate(double deltaX, double deltaY)
+        {
+            if (currentPolygon != null)
+            {
+                for (int i = 0; i < polygonPoints.Count; i++)
+                {
+                    polygonPoints[i] = new Point(polygonPoints[i].X + deltaX, polygonPoints[i].Y + deltaY);
+                }
+
+                DrawPolygon();
+            }
+        }
+
+        private void Rotate(double angle)
+        {
+            if (currentPolygon != null)
+            {
+                Point center = CalculatePolygonCenter();
+                RotateTransform rotateTransform = new RotateTransform(angle, center.X, center.Y);
+
+                for (int i = 0; i < polygonPoints.Count; i++)
+                {
+                    polygonPoints[i] = rotateTransform.Transform(polygonPoints[i]);
+                }
+
+                DrawPolygon();
+            }
+        }
+
+        private void Scale(double scaleFactor)
+        {
+            if (currentPolygon != null)
+            {
+                Point center = CalculatePolygonCenter();
+                ScaleTransform scaleTransform = new ScaleTransform(scaleFactor, scaleFactor, center.X, center.Y);
+
+                for (int i = 0; i < polygonPoints.Count; i++)
+                {
+                    polygonPoints[i] = scaleTransform.Transform(polygonPoints[i]);
+                }
+
+                DrawPolygon();
+            }
+        }
+
+        private Point CalculatePolygonCenter()
+        {
+            double sumX = 0;
+            double sumY = 0;
+
+            foreach (Point point in polygonPoints)
+            {
+                sumX += point.X;
+                sumY += point.Y;
+            }
+
+            double centerX = sumX / polygonPoints.Count;
+            double centerY = sumY / polygonPoints.Count;
+
+            return new Point(centerX, centerY);
+        }
+
+        #endregion 
+
+        private void canvas_MouseLeftButtonDown_1(object sender, MouseButtonEventArgs e)
+        {
+            Point mousePosition = e.GetPosition(canvas);
+            if (bezier)
+            {
+                
+
+                for (int i = 0; i < controlPoints.Count; i++)
+                {
+                    if (Math.Abs(mousePosition.X - controlPoints[i].X) < 10 &&
+                        Math.Abs(mousePosition.Y - controlPoints[i].Y) < 10)
+                    {
+                        draggedPointIndex = i;
+                        return;
+                    }
+                }
+                controlPoints.Add(mousePosition);
+                DrawBezierCurve();
+            }else
+            {
+                if (currentTransform == TransformType.None)
+                {
+                    // Rysowanie nowego wielokąta
+                    polygonPoints.Add(mousePosition);
+                    DrawPolygon();
+                }
+                else
+                {
+                    // Obsługa przekształceń (przesunięcie, obrót, skalowanie)
+                    startPoint = mousePosition;
+                }
+            }
+
+        }
+        private void canvas_MouseMove_1(object sender, MouseEventArgs e)
+        {
+            bool mouseIsDown = System.Windows.Input.Mouse.LeftButton == MouseButtonState.Pressed;
+            if (bezier)
+            {
+                
+                if (mouseIsDown && draggedPointIndex != -1)
+                {
+                    debug.Content = "pisze bezier";
+                    Point mousePosition = e.GetPosition(canvas);
+                    controlPoints[draggedPointIndex] = mousePosition;
+                    DrawBezierCurve();
+                }
+            }else
+            {
+                if (mouseIsDown )
+                {
+                    debug.Content = "pisze polygon";
+                    Point currentPoint = e.GetPosition(canvas);
+
+                    switch (currentTransform)
+                    {
+                        case TransformType.Translate:
+                            Translate(currentPoint.X - startPoint.X, currentPoint.Y - startPoint.Y);
+                            startPoint = currentPoint;
+                            break;
+                        case TransformType.Rotate:
+                            double angle = currentPoint.Y - startPoint.Y + currentPoint.X - startPoint.X ;
+                            Rotate(angle);
+                            startPoint = currentPoint;
+                            break;
+                        case TransformType.Scale:
+                            double scaleFactor = currentPoint.Y - startPoint.Y + currentPoint.X - startPoint.X;
+                            if (scaleFactor > 0)
+                                scaleFactor = 0.99;
+                            else
+                                scaleFactor = 1.01;
+
+                            Scale(scaleFactor);
+                            startPoint = currentPoint;
+                            break;
+                    }
+                }
+            }
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+
+            controlPoints.Add(new Point(50, 200));
+            controlPoints.Add(new Point(150, 50));
+            controlPoints.Add(new Point(250, 200));
+
+            DrawBezierCurve();
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            controlPoints.Clear();
+            bezierCurve.Points.Clear();
+            DrawControlPoints();
+
+            polygonPoints.Clear();
+        }
+
+
+
+        private void CheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            bezier = !bezier;
+        }
+
+        private void typeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            currentTransform = (TransformType)( typeComboBox.SelectedIndex);
+        }
+
+        private void Button_Click_2(object sender, RoutedEventArgs e)
+        {
+            LoadFiguresFromFile("figures.xml");
+        }
+
+        private void Button_Click_3(object sender, RoutedEventArgs e)
+        {
+            SaveFiguresToFile("figures.xml");
+        }
     }
 }
+
