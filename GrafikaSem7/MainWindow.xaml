@@ -8,22 +8,7 @@
         Title="MainWindow" Height="450" Width="800">
     <Grid>
         <Image RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased" x:Name="Image"></Image>
-        <Button Content="Rozszerz_Histogram" HorizontalAlignment="Left" Margin="685,42,0,0" VerticalAlignment="Top" Click="Rozszerz_Histogram_Click"/>
-        <Button Content="wyrownaj_Histogram" HorizontalAlignment="Left" Margin="691,67,0,0" VerticalAlignment="Top" Click="Wyrownaj_Histogram_Click"/>
-        <Label Content="zmienna do tych&#xD;&#xA; wszystkich przycskow" HorizontalAlignment="Left" Margin="4,115,0,0" VerticalAlignment="Top" Height="54"/>
-        <TextBox Name="prog_TextBox"  HorizontalAlignment="Left" Margin="8,169,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="120" TextChanged="TextBox_TextChanged"/>
-        <Button Content="Binarization próg" HorizontalAlignment="Left" Margin="8,192,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.201,0.075" Width="120" Click="Button_Click"/>
-        <Button Content="Black % threshold" HorizontalAlignment="Left" Margin="10,217,0,0" VerticalAlignment="Top" Width="118" Click="Button_Click_1"/>
         <Button Content="New Image" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="-0.263,0.005" Click="Button_Click_2" Margin="726,10,0,0"/>
-        <Button Content="Mean Iterative Selection" HorizontalAlignment="Left" Margin="12,242,0,0" VerticalAlignment="Top" Click="Button_Click_3"/>
-        <Button Content="Otsu" HorizontalAlignment="Left" Margin="12,72,0,0" VerticalAlignment="Top" Click="Button_Click_4" RenderTransformOrigin="2.083,-0.69"/>
-        <Button Content="nickleback" HorizontalAlignment="Left" Margin="12,267,0,0" VerticalAlignment="Top" Click="Button_Click_5" Width="132"/>
-        <Button Content="Bensen" HorizontalAlignment="Left" Margin="12,292,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.058,0.392" Click="Button_Click_6" Width="132"/>
-        <Button Content="Eresion" HorizontalAlignment="Left" Margin="697,115,0,0" VerticalAlignment="Top" Width="80" Click="Button_Click_7"/>
-        <Button Content="Dylatation" HorizontalAlignment="Left" Margin="697,140,0,0" VerticalAlignment="Top" Width="80" Click="Button_Click_8"/>
-        <Button Content="Otwarce" HorizontalAlignment="Left" Margin="698,169,0,0" VerticalAlignment="Top" Width="79" Click="Button_Click_9"/>
-        <Button Content="Domkniecie" HorizontalAlignment="Left" Margin="698,202,0,0" VerticalAlignment="Top" Width="80" Click="Button_Click_10"/>
-        <Button Content="Hit or Miss" HorizontalAlignment="Left" Margin="698,226,0,0" VerticalAlignment="Top" Width="80" Click="Button_Click_11"/>
 
         <Label Content="red" HorizontalAlignment="Left" Margin="652,241,0,0" VerticalAlignment="Top"/>
         <TextBox Name="redTB" HorizontalAlignment="Left" Margin="660,267,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="22" TextChanged="TextBox_TextChanged_1"/>
@@ -33,6 +18,8 @@
         <TextBox Name="blueTB" HorizontalAlignment="Left" Margin="752,267,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="22" TextChanged="blueTB_TextChanged"/>
         <TextBox x:Name="toleranceTB" HorizontalAlignment="Left" Margin="702,369,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="22" RenderTransformOrigin="1.182,5.347" TextChanged="toleranceTB_TextChanged"/>
         <Label Content="tolerance" HorizontalAlignment="Left" Margin="685,338,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.03,0.618"/>
+        <Button Content="find color" HorizontalAlignment="Left" Margin="660,313,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.614,0.022" Width="114" Click="Button_Click_12"/>
+        <Button Content="find green" HorizontalAlignment="Left" Margin="685,197,0,0" VerticalAlignment="Top" Click="Button_Click_13"/>
 
     </Grid>
 </Window>
